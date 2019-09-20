@@ -1,0 +1,31 @@
+发送方式 POST发送
+
+数据类型 JSON
+1)发送消息给服务器，并且服务器返回所有聊天消息
+    {type=0,
+    user:"",
+    msg:""}
+    返回：（res）
+    {
+    result:[
+    "user:'msg'",
+    "user:'msg'",
+    "user:'msg'",
+    "user:'msg'",
+
+    ],
+    error:null
+    }
+2)没16毫秒到服务器请求聊天信息
+发送 ：（req）
+        {type:1}
+返回：（res）
+    {
+    result:[
+    "user:'msg'",
+    "user:'msg'",
+    "user:'msg'",
+    "user:'msg'",
+    ],
+    error:null
+    }

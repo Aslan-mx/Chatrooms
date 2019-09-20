@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+<meta charset="UTF-8">
+<title>暗河</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {margin:0px; padding:0px;}
+        body, html {
+            width:100%;
+            height:100%;
+            overflow:hidden;
+        }
+        #mycanvas{
+            z-index: -2;margin-left: -330px;
+            background-color: rgba(255,255,255,0);
+        }
+        @keyframes clipMe{
+            0%,100%{clip:rect(0,700px,2px,0)}
+            25%{clip:rect(0,2px,700px,0)}
+            50%{clip:rect(700px,700px,700px,0)}
+            75%{clip:rect(0,700px,700px,700px)}
+        }
+        @keyframes clipMe1{
+            0%,100%{clip:rect(700px,700px,700px,0)}
+            25%{clip:rect(0,700px,700px,700px)}
+            50%{clip:rect(0,700px,2px,0)}
+            75%{clip:rect(0,2px,700px,0)}
+        }
+        #msgText{
+            width:700px;
+            height:500px;
+            margin-top: 30px;
+            z-index: 10;
+            color: #eeeeee;
+            background-color: rgba(255,255,255,0.1);
+            position:relative;
+            top: 0;
+            left: 0;
+        }
+        #box{
+            width:700px;
+            height:500px;
+            margin-top: 30px;
+            z-index:8;
+            background-color: rgba(255,255,255,0.1);
+           position: absolute;
+            top: 0;
+           left: 330px;
+            box-shadow:8px 8px 8px 0px #0095e8,-8px -8px 8px 0 #ed209a,2px 2px 2px 0 #f566ff inset ; /*左边阴影*/
+        }
+        #box::before{
+            content:'';
+            position:absolute;
+            left:0;
+            top:0;
+            bottom:0;
+            right:0;
+            border:3px solid #2bffe9;
+            margin:-15px;
+            z-index:-1;
+            -webkit-animation:clipMe 8s linear infinite;
+            -o-animation:clipMe 8s linear infinite;
+            animation:clipMe 8s linear infinite;
+        }
+        #box::after{
+            content: '';
+            position:absolute;
+            left:0;
+            top:0;
+            bottom:0;
+            right:0;
+            border:3px solid #fdff17;
+            margin:-15px;
+            z-index:-1;
+            -webkit-animation:clipMe1 8s linear infinite;
+            -o-animation:clipMe1 8s linear infinite;
+            animation:clipMe1 8s linear infinite;
+        }
+        #names{
+            width: 120px;
+            height: 20px;
+            color: cyan;
+            margin-top: 20px;
+            z-index: 10;
+            border: none;
+            background-color: rgba(255,255,255,0.2);
+            box-shadow:-5px 2px 10px 2px red /*左边阴影*/
+        }
+        #msgs{
+            width: 500px;
+            height: 20px;
+            z-index: 999;
+            border: none;
+            color: mediumspringgreen;
+            background-color: rgba(255,255,255,0.2);
+            box-shadow:-5px 2px 10px 2px lawngreen /*左边阴影*/
+        }
+        #bn{
+            width: 60px;
+            border: none;
+            background-color: rgba(255,255,255,0.2);
+            box-shadow:-5px 2px 10px 2px fuchsia /*左边阴影*/
+        }
+        </style>
+</head>
+<body>
+<center>
+    <canvas id="mycanvas"></canvas>
+    <textarea id="msgText" rows="30" cols="120"></textarea>
+    <div id="box"></div>
+    <br>
+    <input type="text" id="names">:
+    <input type="text" id="msgs">
+    <button id="bn">发送</button>
+</center>
+<script>
+    var myCanvas = document.getElementById('mycanvas');
+    var msgText=document.getElementById("msgText");
+    var names=document.getElementById("names");
+    var msgs=document.getElementById("msgs");
+    var bn=document.getElementById("bn");
+    bn.addEventListener("click",clickHandler);
+    document.addEventListener("keydown",keydownHandler);
+    setInterval(ajax,16);
+    function keydownHandler(e) {
+        if(e.keyCode===13){
+            clickHandler();
+        }
+    }
+    function clickHandler(e) {
+        if(msgs.value.trim().length===0)return;
+        if(names.value.trim().length===0)return;
+        var obj={type:0,user:names.value,msg:msgs.value};
+        ajax(obj);
+        msgs.value="";
+    }
+    function ajax(obj) {
+        if(!obj){
+            obj={type:1};
+        }
+        var xhr=new XMLHttpRequest();
+        xhr.addEventListener("load",loadHandler);
+        xhr.open("POST","http://192.168.0.104:3002");
+        xhr.send(encodeURIComponent(JSON.stringify(obj)));
+    }
+    function  loadHandler(e) {
+        msgText.value = JSON.parse(decodeURIComponent(this.response)).result.join("\n");
+        msgText.scrollTop = msgText.scrollHeight;//聊天消息滚动条随增加而滚动
+    }
+</script>
+<script language="javascript">//字体颜色
+function changeColor(){
+    var color="#f00|#0f0|#00f|#880|#808|#088|yellow|green|blue|red|mediumspringgreen|gray";
+    color=color.split("|");
+    document.getElementById("msgText").style.color=color[parseInt(Math.random() * color.length)];
+    document.getElementById("bn").style.color=color[parseInt(Math.random() * color.length)];
+    document.getElementById("names").style.color=color[parseInt(Math.random() * color.length)];
+    document.getElementById("msgs").style.color=color[parseInt(Math.random() * color.length)];
+}
+setInterval("changeColor()",200);
+</script>
+<script src="js/max.js"></script>
+<canvas id="canvas"></canvas>
+<script src='js/min.js'></script>
+<script src='js/jquery.min.js'></script>
+<script  src="js/index.js"></script>
+<script>
+    var myCanvas = document.getElementById('mycanvas');
+    var cxt = myCanvas.getContext('2d');
+    var snowcount = 100; /// 显示数量
+    var index = 0;
+    imageList = {}; /// 图片列表
+    imageSource = ['bg.png', 'snow3.png']; /// 图片源文件类表
+    var snowlist = [];
+    /// 初始化
+    function init() {
+        /// 画布
+        myCanvas.width = document.body.offsetWidth;
+        myCanvas.height = document.body.offsetHeight;
+        // 加载图片
+        loadImages();
+    }
+    /// 加载图片
+    function loadImages() {
+        for (var i in imageSource) {
+            imageList[i] = new Image();
+            imageList[i].src = imageSource[i];
+
+            imageList[i].onload = function () {
+                index++;
+                if (imageSource.length >= index++) {
+                    callImages();
+                }
+            }
+        }
+    }
+    function callImages() {
+        for (var i = 0; i < snowcount; i++) {
+            snowlist.push(new snow());
+        }
+        setInterval(function () {
+            cxt.clearRect(0, 0, myCanvas.width, myCanvas.height);
+            fillBackground();
+
+            for (var i in snowlist) {
+                snowlist[i].Go();
+
+                if (snowlist[i].Y >= myCanvas.height) {
+                    snowlist[i] = new snow();
+                }
+            }
+        }, 1);
+    }
+    function fillBackground() {
+        cxt.drawImage(imageList[0], 0, 0, imageList[0].width, imageList[0].height, 0,0, myCanvas.width, myCanvas.height);
+    }
+    /// 雪
+    function snow()
+    {
+        this.X = parseInt(Math.random() * myCanvas.width);
+        this.Y = 0;
+        this.Size = parseInt(Math.random() * 100);
+        this.Transparency = 10;
+        this.Speed = parseInt(Math.random()*(2-6+1)+4);
+    }
+    /// 动起来
+    snow.prototype.Go = function () {
+        this.Y  = this.Y + this.Speed;
+        cxt.drawImage(imageList[1], 0, 0, imageList[1].width, imageList[1].height, this.X, this.Y , imageList[1].width - this.Size , imageList[1].height - this.Size);
+    }
+    init();
+</script>
+</body>
+</html>
